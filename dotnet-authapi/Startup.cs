@@ -1,3 +1,5 @@
+using dotnet_authapi.Helpers;
+using dotnet_authapi.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,12 +28,14 @@ namespace dotnet_authapi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddCors();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "dotnet_authapi", Version = "v1" });
             });
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<JwtService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +49,13 @@ namespace dotnet_authapi
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors(options => options
+                .WithOrigins(new[] { "http://localhost:3000", "http://localhost:8080", "http://localhost:4200"})
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+            );
 
             app.UseRouting();
 
